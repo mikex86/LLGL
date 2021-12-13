@@ -65,6 +65,13 @@ class LLGL_EXPORT Display : public Interface
         static bool ShowCursor(bool show);
 
         /**
+         * \brief Sets the cursor position
+         * @param x X-coordinate of the cursor position
+         * @param y Y-coordinate of the cursor position
+         */
+        static void SetCursorPosition(int x, int y);
+
+        /**
         \brief Returns true if the cursor is currently being shown on any display.
         \see ShowCursor
         */

@@ -102,6 +102,10 @@ bool Display::ShowCursor(bool show)
     return false;
 }
 
+void Display::SetCursorPosition(int x, int y) {
+    ::SetCursorPos(x, y);
+}
+
 bool Display::IsCursorShown()
 {
     bool visible = true;
