@@ -9,6 +9,7 @@
 #define LLGL_INPUT_H
 
 
+#include <LLGL/ControllerState.h>
 #include <LLGL/Window.h>
 #include <LLGL/Types.h>
 #include <array>
@@ -64,6 +65,17 @@ class LLGL_EXPORT Input : public Window::EventListener
         */
         bool KeyDoubleClick(Key keyCode) const;
 
+        /**
+         * \brief returns the number of controllers connected to the system.
+         */
+        uint32_t GetNumberOfControllers() const;
+
+        /**
+         * \brief Returns the controller handle of the specified controller index.
+         * \note The controller index must be in the range [0, GetNumberOfControllers()).
+         */
+        [[nodiscard]] const ControllerState& GetController(uint32_t controllerId) const;
+
         //! Returns the local mouse position.
         inline const Offset2D& GetMousePosition() const
         {
@@ -112,6 +124,8 @@ class LLGL_EXPORT Input : public Window::EventListener
 
         void OnLostFocus(Window& sender) override;
 
+        void OnControllerStates(Window &sender, const std::vector<ControllerState> &states) override;
+
     private:
 
         using KeyStateArray = std::array<bool, 256>;
@@ -126,31 +140,39 @@ class LLGL_EXPORT Input : public Window::EventListener
             void Reset(KeyStateArray& keyStates);
         };
 
+        struct ControllerArray
+        {
+            std::vector<ControllerState> controllerStates;
+            void SetControllerStates(const std::vector<ControllerState> &controllerStates);
+        };
+
     private:
 
         void InitArray(KeyStateArray& keyStates);
 
     private:
 
-        KeyStateArray       keyPressed_;
-        KeyStateArray       keyDown_;
-        KeyStateArray       keyDownRepeated_;
-        KeyStateArray       keyUp_;
+        ControllerArray      controllers_;
 
-        Offset2D            mousePosition_;
-        Offset2D            mouseMotion_;
+        KeyStateArray        keyPressed_;
+        KeyStateArray        keyDown_;
+        KeyStateArray        keyDownRepeated_;
+        KeyStateArray        keyUp_;
 
-        int                 wheelMotion_    = 0;
+        Offset2D             mousePosition_;
+        Offset2D             mouseMotion_;
 
-        KeyTracker          keyDownTracker_;
-        KeyTracker          keyDownRepeatedTracker_;
-        KeyTracker          keyUpTracker_;
+        int                  wheelMotion_    = 0;
 
-        std::array<bool, 3> doubleClick_;
+        KeyTracker           keyDownTracker_;
+        KeyTracker           keyDownRepeatedTracker_;
+        KeyTracker           keyUpTracker_;
 
-        std::wstring        chars_;
+        std::array<bool, 3>  doubleClick_;
 
-        std::size_t         anyKeyCount_    = 0;
+        std::wstring         chars_;
+
+        std::size_t          anyKeyCount_    = 0;
 
 };
 

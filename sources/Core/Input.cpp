@@ -8,7 +8,6 @@
 #include <LLGL/Input.h>
 #include <algorithm>
 
-
 namespace LLGL
 {
 
@@ -56,6 +55,13 @@ bool Input::KeyDoubleClick(Key keyCode) const
     return false;
 }
 
+uint32_t Input::GetNumberOfControllers() const {
+    return static_cast<uint32_t>(controllers_.controllerStates.size());
+}
+
+const ControllerState &Input::GetController(uint32_t controllerId) const {
+    return controllers_.controllerStates.at(controllerId);
+}
 
 /*
  * ======= Protected: =======
@@ -163,6 +169,10 @@ void Input::OnLostFocus(Window& sender)
 }
 
 
+void Input::OnControllerStates(Window &sender, const std::vector<ControllerState> &states) {
+    controllers_.SetControllerStates(states);
+}
+
 /*
  * ======= Private: =======
  */
@@ -191,6 +201,13 @@ void Input::KeyTracker::Reset(KeyStateArray& keyStates)
         auto idx = KEY_IDX(keys[resetCount]);
         keyStates[idx] = false;
     }
+}
+
+/*
+ * ControllerStateArray structure
+ */
+void Input::ControllerArray::SetControllerStates(const std::vector<ControllerState> &controllerStates) {
+    this->controllerStates = controllerStates;
 }
 
 #undef KEY_IDX

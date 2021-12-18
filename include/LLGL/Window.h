@@ -9,6 +9,7 @@
 #define LLGL_WINDOW_H
 
 
+#include "ControllerState.h"
 #include "Surface.h"
 #include "WindowFlags.h"
 #include "Key.h"
@@ -95,6 +96,9 @@ class LLGL_EXPORT Window : public Surface
 
                 //! Send when the window lost the keyboard focus.
                 virtual void OnLostFocus(Window& sender);
+
+                //! Send every time the controller states are queried.
+                virtual void OnControllerStates(Window &sender, const std::vector<ControllerState> &states);
 
                 /**
                 \brief Send when the window received a timer event with the specified timer ID number.
@@ -242,6 +246,9 @@ class LLGL_EXPORT Window : public Surface
 
         //! Posts a 'LostFocus' event to all event listeners.
         void PostLostFocus();
+
+        //! Posts a 'ControllerStates' event to all event listeners.
+        void PostControllerStates(const std::vector<ControllerState> &states);
 
         /**
         \brief Posts a timer event with the specified timer ID number.

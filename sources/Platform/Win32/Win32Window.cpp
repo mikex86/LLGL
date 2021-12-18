@@ -1,6 +1,6 @@
 /*
  * Win32Window.cpp
- * 
+ *
  * This file is part of the "LLGL" project (Copyright (c) 2015-2019 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
@@ -9,8 +9,10 @@
 #include "Win32WindowClass.h"
 #include "../../Core/Helper.h"
 #include <LLGL/Platform/NativeHandle.h>
-#include <LLGL/Platform/Platform.h>
-
+#include <shellapi.h>
+#include <xinput.h>
+#include <JoyShockLibrary.h>
+#include <iostream>
 
 namespace LLGL
 {
@@ -337,6 +339,149 @@ void Win32Window::SetDesc(const WindowDescriptor& desc)
     }
 }
 
+ControllerButton GetControllerButtonFlagsFromXInputWord(WORD controllerButtons) {
+    uint32_t flags = 0;
+    if ((controllerButtons & XINPUT_GAMEPAD_DPAD_UP) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::DPAD_UP);
+    }
+    if ((controllerButtons & XINPUT_GAMEPAD_DPAD_DOWN) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::DPAD_DOWN);
+    }
+    if ((controllerButtons & XINPUT_GAMEPAD_DPAD_LEFT) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::DPAD_LEFT);
+    }
+    if ((controllerButtons & XINPUT_GAMEPAD_DPAD_RIGHT) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::DPAD_RIGHT);
+    }
+    if ((controllerButtons & XINPUT_GAMEPAD_START) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::START);
+    }
+    if ((controllerButtons & XINPUT_GAMEPAD_BACK) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::BACK);
+    }
+    if ((controllerButtons & XINPUT_GAMEPAD_LEFT_THUMB) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::LEFT_BUMPER);
+    }
+    if ((controllerButtons & XINPUT_GAMEPAD_RIGHT_THUMB) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::RIGHT_BUMPER);
+    }
+    if ((controllerButtons & XINPUT_GAMEPAD_A) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::BUTTON_S);
+    }
+    if ((controllerButtons & XINPUT_GAMEPAD_B) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::BUTTON_E);
+    }
+    if ((controllerButtons & XINPUT_GAMEPAD_X) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::BUTTON_W);
+    }
+    if ((controllerButtons & XINPUT_GAMEPAD_Y) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::BUTTON_N);
+    }
+    return static_cast<ControllerButton>(flags);
+}
+
+ControllerButton GetControllerButtonFlagsFromJSLFlags(int buttons) {
+    uint32_t flags = 0;
+    if ((buttons & JSMASK_UP) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::DPAD_UP);
+    }
+    if ((buttons & JSMASK_DOWN) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::DPAD_DOWN);
+    }
+    if ((buttons & JSMASK_LEFT) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::DPAD_LEFT);
+    }
+    if ((buttons & JSMASK_RIGHT) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::DPAD_RIGHT);
+    }
+    if ((buttons & JSMASK_OPTIONS) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::START);
+    }
+    if ((buttons & JSMASK_SHARE) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::BACK);
+    }
+    if ((buttons & JSMASK_L) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::LEFT_BUMPER);
+    }
+    if ((buttons & JSMASK_R) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::RIGHT_BUMPER);
+    }
+    if ((buttons & JSMASK_S) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::BUTTON_S);
+    }
+    if ((buttons & JSMASK_W) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::BUTTON_W);
+    }
+    if ((buttons & JSMASK_E) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::BUTTON_E);
+    }
+    if ((buttons & JSMASK_N) != 0) {
+        flags |= static_cast<uint32_t>(ControllerButton::BUTTON_N);
+    }
+    return static_cast<ControllerButton>(flags);
+}
+
+void Win32Window::QueryControllerStates() {
+    std::vector<ControllerState> states;
+    for (DWORD i = 0; i < XUSER_MAX_COUNT; i++) {
+        XINPUT_STATE state;
+        ZeroMemory(&state, sizeof(XINPUT_STATE));
+        if (XInputGetState(i, &state) == ERROR_SUCCESS) {
+            ControllerButton buttonFlags = GetControllerButtonFlagsFromXInputWord(state.Gamepad.wButtons);
+            float leftThumbXNorm = static_cast<float>(state.Gamepad.sThumbLX) / 32767.0f;
+            float leftThumbYNorm = static_cast<float>(state.Gamepad.sThumbLY) / 32767.0f;
+            float rightThumbXNorm = static_cast<float>(state.Gamepad.sThumbRX) / 32767.0f;
+            float rightThumbYNorm = static_cast<float>(state.Gamepad.sThumbRY) / 32767.0f;
+            float leftTriggerNorm = static_cast<float>(state.Gamepad.bLeftTrigger) / 255.0f;
+            float rightTriggerNorm = static_cast<float>(state.Gamepad.bRightTrigger) / 255.0f;
+            ControllerState controllerState;
+            controllerState.setLeftThumbX(leftThumbXNorm);
+            controllerState.setLeftThumbY(leftThumbYNorm);
+            controllerState.setRightThumbX(rightThumbXNorm);
+            controllerState.setRightThumbY(rightThumbYNorm);
+            controllerState.setLeftTrigger(leftTriggerNorm);
+            controllerState.setRightTrigger(rightTriggerNorm);
+            controllerState.setButtonFlags(buttonFlags);
+            states.push_back(controllerState);
+        }
+    }
+    static bool devicesConnected = false;
+    static int nDevices = 0;
+    static int* deviceHandleArray;
+    {
+        if (!devicesConnected) {
+            nDevices = JslConnectDevices();
+            devicesConnected = true;
+            deviceHandleArray = new int[nDevices];
+            nDevices = JslGetConnectedDeviceHandles(deviceHandleArray, nDevices);
+        }
+        for (uint32_t i = 0; i < nDevices; i++)
+        {
+            auto handle = deviceHandleArray[i];
+            auto buttons = JslGetButtons(handle);
+            ControllerButton buttonFlags = GetControllerButtonFlagsFromJSLFlags(buttons);
+
+            float leftThumbXNorm = JslGetLeftX(handle);
+            float leftThumbYNorm = JslGetLeftY(handle);
+            float rightThumbXNorm = JslGetRightX(handle);
+            float rightThumbYNorm = JslGetRightY(handle);
+            float leftTriggerNorm = JslGetLeftTrigger(handle);
+            float rightTriggerNorm = JslGetRightTrigger(handle);
+
+            ControllerState controllerState;
+            controllerState.setLeftThumbX(leftThumbXNorm);
+            controllerState.setLeftThumbY(leftThumbYNorm);
+            controllerState.setRightThumbX(rightThumbXNorm);
+            controllerState.setRightThumbY(rightThumbYNorm);
+            controllerState.setLeftTrigger(leftTriggerNorm);
+            controllerState.setRightTrigger(rightTriggerNorm);
+            controllerState.setButtonFlags(buttonFlags);
+            states.push_back(controllerState);
+        }
+    }
+    PostControllerStates(states);
+}
+
 void Win32Window::OnProcessEvents()
 {
     /* Peek all queued messages */
@@ -347,6 +492,7 @@ void Win32Window::OnProcessEvents()
         TranslateMessage(&message);
         DispatchMessage(&message);
     }
+    QueryControllerStates();
 }
 
 
@@ -402,6 +548,8 @@ HWND Win32Window::CreateWindowHandle(const WindowDescriptor& desc)
 
     return wnd;
 }
+
+
 
 
 } // /namespace LLGL

@@ -616,6 +616,11 @@ elseif(APPLE)
     target_link_libraries(LLGL ${COCOA_LIBRARY})
 elseif(UNIX)
     target_link_libraries(LLGL X11 pthread Xxf86vm Xrandr)
+elseif(WIN32)
+    target_link_libraries(LLGL PRIVATE XInput)
+    # JoyShock library
+    add_subdirectory("external/JoyShockLibrary")
+    target_link_libraries(LLGL PRIVATE JoyShockLibrary)
 endif()
 
 set_target_properties(LLGL PROPERTIES LINKER_LANGUAGE CXX DEBUG_POSTFIX "D")

@@ -80,6 +80,9 @@ void Window::EventListener::OnTimer(Window& sender, std::uint32_t timerID)
     // dummy
 }
 
+void Window::EventListener::OnControllerStates(Window &sender, const std::vector<ControllerState> &states) {
+    // dummy
+}
 
 /* ----- Window class ----- */
 
@@ -268,6 +271,10 @@ void Window::PostLostFocus()
 void Window::PostTimer(std::uint32_t timerID)
 {
     FOREACH_LISTENER_CALL( OnTimer(*this, timerID) );
+}
+
+void Window::PostControllerStates(const std::vector<ControllerState> &states) {
+    FOREACH_LISTENER_CALL( OnControllerStates(*this, states) );
 }
 
 #undef FOREACH_LISTENER_CALL

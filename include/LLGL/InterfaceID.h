@@ -52,6 +52,7 @@ struct InterfaceID
         Window_EventListener,   //!< \see Window::EventListener
         Input,                  //!< \see Input
         Timer,                  //!< \see Timer
+        Controller,             //!< \see Controller
 
         /**
         \brief Maximum reserved ID for interfaces.

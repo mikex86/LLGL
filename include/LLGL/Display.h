@@ -69,6 +69,7 @@ class LLGL_EXPORT Display : public Interface
          * @param x X-coordinate of the cursor position
          * @param y Y-coordinate of the cursor position
          */
+        // TODO: IMPLEMENT FOR ALL PLATFORMS
         static void SetCursorPosition(int x, int y);
 
         /**
