@@ -5,6 +5,3 @@
 [submodule "external/JoyShockLibrary"]
 	path = external/JoyShockLibrary
 	url = https://github.com/mikex86/JoyShockLibrary
-[submodule "examples/JoyShockLibrary"]
-	path = examples/JoyShockLibrary
-	url = https://github.com/mikex86/JoyShockLibrary
